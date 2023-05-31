@@ -1,53 +1,106 @@
 <?php
-
+ // Create a new Razorpay payment
+ require('razorpay-php/Razorpay.php');
+ use Razorpay\Api\Api;
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
+// Include your custom dbconfig file
 include 'config.php';
 
-session_start();
-
+// Get the currently logged in user's ID
 $user_id = $_SESSION['user_id'];
 
 if(!isset($user_id)){
    header('location:login.php');
 }
 
-if(isset($_POST['order_btn'])){
+if($_SERVER['REQUEST_METHOD'] == 'POST'){
+    // Get the form data and store everything into session
+    if(isset($_POST['order_btn'])){
 
-   $name = mysqli_real_escape_string($conn, $_POST['name']);
-   $number = $_POST['number'];
-   $email = mysqli_real_escape_string($conn, $_POST['email']);
-   $method = mysqli_real_escape_string($conn, $_POST['method']);
-   $address = mysqli_real_escape_string($conn, 'flat no. '. $_POST['flat'].', '. $_POST['street'].', '. $_POST['city'].', '. $_POST['country'].' - '. $_POST['pin_code']);
-   $placed_on = date('d-M-Y');
-
-   $cart_total = 0;
-   $cart_products[] = '';
-
-   $cart_query = mysqli_query($conn, "SELECT * FROM `cart` WHERE user_id = '$user_id'") or die('query failed');
-   if(mysqli_num_rows($cart_query) > 0){
-      while($cart_item = mysqli_fetch_assoc($cart_query)){
-         $cart_products[] = $cart_item['name'].' ('.$cart_item['quantity'].') ';
-         $sub_total = ($cart_item['price'] * $cart_item['quantity']);
-         $cart_total += $sub_total;
+      $name = mysqli_real_escape_string($conn, $_POST['name']);
+      $number = $_POST['number'];
+      $email = mysqli_real_escape_string($conn, $_POST['email']);
+      $address = mysqli_real_escape_string($conn, 'flat no. '. $_POST['flat'].', '. $_POST['street'].', '. $_POST['city'].', '. $_POST['country'].' - '. $_POST['pin_code']);
+      $placed_on = date('d-M-Y');
+      
+      
+      $cart_total = 0;
+      $cart_products[] = '';
+   
+      $cart_query = mysqli_query($conn, "SELECT * FROM `cart` WHERE user_id = '$user_id'") or die('query failed');
+      if(mysqli_num_rows($cart_query) > 0){
+         while($cart_item = mysqli_fetch_assoc($cart_query)){
+            $cart_products[] = $cart_item['name'].' ('.$cart_item['quantity'].') ';
+            $sub_total = ($cart_item['price'] * $cart_item['quantity']);
+            $cart_total += $sub_total;
+         }
       }
-   }
+      $_SESSION['email']=$email;
+      $_SESSION['name']=$name;
+      $_SESSION['price']=$cart_total;
+   
+      $total_products = implode(', ',$cart_products);
+   
+      $order_query = mysqli_query($conn, "SELECT * FROM `orders` WHERE name = '$name' AND number = '$number' AND email = '$email' AND address = '$address' AND total_products = '$total_products' AND total_price = '$cart_total'") or die('query failed');
+   
 
-   $total_products = implode(', ',$cart_products);
 
-   $order_query = mysqli_query($conn, "SELECT * FROM `orders` WHERE name = '$name' AND number = '$number' AND email = '$email' AND method = '$method' AND address = '$address' AND total_products = '$total_products' AND total_price = '$cart_total'") or die('query failed');
+    // Check if there are enough products/quantity available and handle
+    
 
-   if($cart_total == 0){
+   
+    $api_key = 'rzp_test_xwIpNJsn43cAV7';
+    $api_secret = 'MXVHLxYxM9naOExYLNbr0zQH';
+    $api = new Api($api_key, $api_secret);
+    $order = $api->order->create(array(
+        'amount' => $cart_total * 100, // amount in paise
+        'currency' => 'INR',
+        'payment_capture' => 1 // auto capture payment
+    ));
+    $payment_id = '';
+
+    // Insert the order records into table
+    if($cart_total == 0){
       $message[] = 'your cart is empty';
    }else{
       if(mysqli_num_rows($order_query) > 0){
          $message[] = 'order already placed!'; 
       }else{
-         mysqli_query($conn, "INSERT INTO `orders`(user_id, name, number, email, method, address, total_products, total_price, placed_on) VALUES('$user_id', '$name', '$number', '$email', '$method', '$address', '$total_products', '$cart_total', '$placed_on')") or die('query failed');
+         mysqli_query($conn, "INSERT INTO `orders`(user_id, name, number, email, address, total_products, total_price, placed_on) VALUES('$user_id', '$name', '$number', '$email', '$address', '$total_products', '$cart_total', '$placed_on')") or die('query failed');
          $message[] = 'order placed successfully!';
+         $order_id = mysqli_insert_id($conn);
          mysqli_query($conn, "DELETE FROM `cart` WHERE user_id = '$user_id'") or die('query failed');
       }
    }
-   
+    // Update the product quantity
+
+
+    // Redirect to the Razorpay payment page
+    $payment_id = $order['id'];
+    $amount = $cart_total * 100;
+    $currency = 'INR';
+    $name = $name;
+    $email = $email;
+    $number= $number;
+    $callback_url = 'razorpay_callback.php';
+    $razorpay_key = 'rzp_test_xwIpNJsn43cAV7';//RAZORPAY API KEY
+    $razorpay_secret = 'MXVHLxYxM9naOExYLNbr0zQH';//RAZORPAY SECRET KEY
+    $hash = hash_hmac('sha256', $payment_id . '|' . $amount . '|' . $currency . '|' . $name . '|' . $email . '|', $razorpay_secret);//ADD MORE CONTENTS TO THE HAS USING OTHER FACTORS LIKE ADDRESS IF NEEDED
+    header("Location: pay.php?checkout=manual");
+    exit();
+    //https://checkout.razorpay.com/v1/checkout/payment?razorpay_key=$razorpay_key&razorpay_payment_id=$payment_id&razorpay_amount=$amount&razorpay_currency=$currency&razorpay_name=$name&razorpay_email=$email&razorpay_callback_url=$callback_url&razorpay_signature=$hash
 }
+?>
+         </form>
+         <?php
+      }
+   
+
+// this is the manual payment goes to
+
+
 
 ?>
 
@@ -114,15 +167,6 @@ if(isset($_POST['order_btn'])){
             <input type="email" name="email" required placeholder="enter your email">
          </div>
          <div class="inputBox">
-            <span>payment method :</span>
-            <select name="method">
-               <option value="cash on delivery">cash on delivery</option>
-               <option value="credit card">credit card</option>
-               <option value="paypal">paypal</option>
-               <option value="paytm">paytm</option>
-            </select>
-         </div>
-         <div class="inputBox">
             <span>address line 01 :</span>
             <input type="number" min="0" name="flat" required placeholder="e.g. flat no.">
          </div>
@@ -151,14 +195,6 @@ if(isset($_POST['order_btn'])){
    </form>
 
 </section>
-
-
-
-
-
-
-
-
 
 <?php include 'footer.php'; ?>
 

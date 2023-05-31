@@ -10,10 +10,19 @@ if(!isset($admin_id)){
    header('location:login.php');
 };
 
-if(isset($_POST['add_product'])){
+$date=date('Y-m-d');
+// Fetch the gold price for the given date
+$sql = "SELECT gold_price,silver_price FROM gold_price WHERE date = '$date'";
+$result = mysqli_query($conn, $sql);
 
+if (mysqli_num_rows($result) > 0) {
+  // There is a matching row, fetch the price per gram value
+  $row = mysqli_fetch_assoc($result);
+  $price_per_gram = $row["price_per_gram"];
+}
+if(isset($_POST['add_product'])){
+   $element= $_POST['element'];
    $name = mysqli_real_escape_string($conn, $_POST['name']);
-   $price = $_POST['price'];
    $weight = $_POST['weight'];
    $desc = $_POST['description'];
    $image = $_FILES['image']['name'];
@@ -21,13 +30,18 @@ if(isset($_POST['add_product'])){
    $image_size = $_FILES['image']['size'];
    $image_tmp_name = $_FILES['image']['tmp_name'];
    $image_folder = 'uploaded_img/'.$image;
-
+   if($element == 'Gold'){
+   $price=$gold_price*$weight;
+   }
+   else{
+      $price=$silver_price*$weight;
+   }
    $select_product_name = mysqli_query($conn, "SELECT name FROM `products` WHERE name = '$name'") or die('query failed');
 
    if(mysqli_num_rows($select_product_name) > 0){
       $message[] = 'product name already added';
    }else{
-      $add_product_query = mysqli_query($conn, "INSERT INTO `products`(name, price, weight, description, category_id, image) VALUES('$name', '$price','$weight', '$desc','$category','$image')") or die('query failed');
+      $add_product_query = mysqli_query($conn, "INSERT INTO `products`(name, price, weight, description, category_id, image, category) VALUES('$name', '$price','$weight', '$desc','$category','$image','$element')") or die('query failed');
 
       if($add_product_query){
          if($image_size > 2000000){
@@ -114,6 +128,10 @@ if(isset($_POST['update_product'])){
       <input type="number" min="0" name="price" class="box" placeholder="enter product price" required>
       <input type="number" min="0" name="weight" class="box" placeholder="enter product weight" required>
       <input type="text" name="description" class="box" placeholder="enter product description" required>
+      <select class="box" name="element">
+         <option value="Gold">Gold</option>
+         <option value="Silver">Silver</option>
+</select>
       <select class="box" name="category">
       <?php
          //create PHP code to display categories

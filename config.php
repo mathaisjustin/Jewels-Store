@@ -1,4 +1,10 @@
 <?php
+
+// razorpay elements
+$keyId = 'rzp_test_xwIpNJsn43cAV7';
+$keySecret = 'MXVHLxYxM9naOExYLNbr0zQH';
+$displayCurrency = 'INR';
+
 // this is hosting for localhost on xammp
 define('SITEURL', 'https://localhost/Jewels-Store/');
 $server = "localhost";

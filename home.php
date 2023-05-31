@@ -146,7 +146,7 @@ if(isset($_POST['add_to_cart'])){
 
       <div class="content">
          <h3>about us</h3>
-         <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Impedit quos enim minima ipsa dicta officia corporis ratione saepe sed adipisci?</p>
+         <p> Welcome to our exquisite jewellery store website, where elegance meets luxury. Our collection of handcrafted jewels will leave you spellbound with their intricate details and unparalleled quality.</p>
          <a href="about.php" class="btn">read more</a>
       </div>
 
@@ -163,6 +163,20 @@ if(isset($_POST['add_to_cart'])){
    </div>
 
 </section>
+
+<!--Start of Tawk.to Script-->
+<script type="text/javascript">
+    var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+    (function(){
+    var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+    s1.async=true;
+    s1.src='https://embed.tawk.to/644df6f64247f20fefee899f/1gv88pda7';
+    s1.charset='UTF-8';
+    s1.setAttribute('crossorigin','*');
+    s0.parentNode.insertBefore(s1,s0);
+    })();
+    </script>
+    <!--End of Tawk.to Script-->
 
 
 

@@ -74,7 +74,7 @@ if(!isset($user_id)){
    
 <section class="products">
 
-   <h1 class="title">Cars on <a href="#" class="text-white">"<?php echo $category_title; ?>"</a></h1>
+   <h1 class="title">Products on <a href="#" class="text-white">"<?php echo $category_title; ?>"</a></h1>
 
    <div class="box-container">
 
@@ -85,13 +85,16 @@ if(!isset($user_id)){
                $id = $fetch_products['id'];
       ?>
      <form action="" method="post" class="box">
+     <input type="hidden" name="product_weight" value="<?php echo $fetch_products['weight']; ?> ">
       <img class="image" src="uploaded_img/<?php echo $fetch_products['image']; ?>" alt="">
       <div class="name"><?php echo $fetch_products['name']; ?></div>
       <div class="price">Rs <?php echo $fetch_products['price']; ?>/-</div>
-      <div class="weight">Weight <?php echo $fetch_products['weight']; ?> g</div>
+      <div class="weight"> Weight <?php echo $fetch_products['weight']; ?> g</div>
       <input type="number" min="1" name="product_quantity" value="1" class="qty">
+      
       <input type="hidden" name="product_name" value="<?php echo $fetch_products['name']; ?>">
       <input type="hidden" name="product_price" value="<?php echo $fetch_products['price']; ?>">
+    
       <input type="hidden" name="product_image" value="<?php echo $fetch_products['image']; ?>">
       <input type="submit" value="add to cart" name="add_to_cart" class="btn">
       <a href="details.php?book_id=<?php echo $id; ?>" class="btn">view details</a>

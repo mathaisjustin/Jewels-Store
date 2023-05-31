@@ -31,7 +31,7 @@ if(isset($message)){
 <header class="header">
    <div class="header-2">
       <div class="flex">
-         <a href="home.php" class="logo">Jewels Store.</a>
+         <a href="home.php" class="logo">JMD Jewellers.</a>
 
          <nav class="navbar">
             <a href="home.php">home</a>

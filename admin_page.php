@@ -9,6 +9,7 @@ $admin_id = $_SESSION['admin_id'];
 if(!isset($admin_id)){
    header('location:login.php');
 }
+else{
 
 ?>
 
@@ -28,8 +29,30 @@ if(!isset($admin_id)){
 
 </head>
 <body>
-   
 <?php include 'admin_header.php'; ?>
+<?php
+// Fetch the gold and silver price for the current date
+$today = date('Y-m-d');
+$sql = "SELECT gold_price,silver_price FROM gold_price WHERE date = '$today'";
+$result = mysqli_query($conn, $sql);
+
+if (mysqli_num_rows($result) > 0) {
+  // There is a matching row, fetch the price per gram value
+  $row = mysqli_fetch_assoc($result);
+  $gold_price = $row["gold_price"];
+  $silver_price = $row["silver_price"];
+
+  // Update the product prices based on the gold price
+  $sql = "UPDATE products SET price = weight * $gold_price WHERE category='Gold'";
+  mysqli_query($conn, $sql);
+
+  // Update the product prices based on the silver price
+  $sqls = "UPDATE products SET price = weight * $silver_price WHERE category='Silver'";
+  mysqli_query($conn, $sqls);
+}
+else{
+   
+}  ?>
 
 <!-- admin dashboard section starts  -->
 
@@ -102,8 +125,8 @@ if(!isset($admin_id)){
             $number_of_admins = mysqli_num_rows($select_admins);
          ?>
          <h3><?php echo $number_of_admins; ?></h3>
-         <p>admin users</p>
-      </div>
+         <p>admin users</p> 
+         </div>
 
       <div class="box">
          <?php 
@@ -131,6 +154,5 @@ if(!isset($admin_id)){
 
 <!-- custom admin js file link  -->
 <script src="js/admin_script.js"></script>
-
-</body>
-</html>
+<?php
+}?>
